@@ -1,0 +1,17 @@
+.fc {
+  --fc-border-color: #1e293b;
+  --fc-page-bg-color: #111827;
+  --fc-neutral-bg-color: #0a0f1e;
+  --fc-list-event-hover-bg-color: #1e293b;
+  --fc-today-bg-color: rgba(99, 102, 241, 0.1);
+  --fc-neutral-text-color: #f1f5f9;
+  --fc-button-text-color: #f1f5f9;
+  --fc-button-bg-color: #6366f1;
+  --fc-button-hover-bg-color: #4f46e5;
+  --fc-head-text-color: #f1f5f9;
+  --fc-col-header-cell-text-color: #94a3b8;
+}
+
+.fc .fc-button-primary:disabled {
+  opacity: 0.3;
+}
