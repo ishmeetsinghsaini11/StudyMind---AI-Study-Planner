@@ -5,7 +5,21 @@ require('dotenv').config()
 const app = express()
 const db = require('./db/database')
 
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(cors({
+  origin: function(origin, callback) {
+    // Allow localhost, ngrok, and Vercel domains
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://study-mind-ai-study-planner.vercel.app'
+    ]
+    if (!origin || allowedOrigins.includes(origin) || origin.includes('ngrok')) {
+      callback(null, true)
+    } else {
+      callback(new Error('Not allowed by CORS'))
+    }
+  },
+  credentials: true
+}))
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 
