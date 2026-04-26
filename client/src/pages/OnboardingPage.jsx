@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Upload, X } from 'lucide-react';
+import { ArrowRight, Upload, X, ChevronDown } from 'lucide-react';
 import api from '../api';
 import toast from 'react-hot-toast';
 
-// Add CSS for slider styling
+// Add CSS for slider styling and datalist positioning
 const sliderStyles = `
   input[type="range"]::-webkit-slider-thumb {
     appearance: none;
@@ -32,6 +32,18 @@ const sliderStyles = `
   input[type="range"]::-moz-range-thumb:hover {
     background: #818cf8;
   }
+
+  datalist {
+    position: absolute;
+    z-index: 1000;
+  }
+
+  datalist option {
+    background: #1e1e2e;
+    color: white;
+    padding: 8px 12px;
+    cursor: pointer;
+  }
 `;
 
 // Inject styles into the document
@@ -46,6 +58,10 @@ const OnboardingPage = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
+  const [subjectInput, setSubjectInput] = useState('');
+  const dropdownRef = useRef(null);
+  
   const [formData, setFormData] = useState({
     subjects: [],
     examDate: '',
@@ -82,6 +98,25 @@ const OnboardingPage = () => {
     { id: 'night', icon: '🌙', label: 'Night Owl' },
     { id: 'balanced', icon: '⚡', label: 'Balanced' },
   ];
+
+  const subjectOptions = [
+    'Mathematics', 'Physics', 'Chemistry', 'Biology',
+    'Computer Science', 'React.js', 'JavaScript', 'Python',
+    'Java', 'Data Structures', 'Algorithms', 'Machine Learning',
+    'History', 'Geography', 'Economics', 'English Literature',
+    'Psychology', 'Business Studies', 'Accounting', 'Statistics'
+  ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowSubjectDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const handleNext = () => {
     if (step < 3) {
@@ -133,11 +168,18 @@ const OnboardingPage = () => {
 
   const handleSubjectInput = (e) => {
     const value = e.target.value;
+    setSubjectInput(value);
     if (e.key === 'Enter') {
       e.preventDefault();
       addSubject(value);
-      e.target.value = '';
+      setSubjectInput('');
     }
+  };
+
+  const handleSubjectSelect = (subject) => {
+    addSubject(subject);
+    setSubjectInput('');
+    setShowSubjectDropdown(false);
   };
 
   const handleSubmit = async () => {
@@ -258,46 +300,51 @@ const OnboardingPage = () => {
                       ))}
                     </div>
                   )}
-                  <div className="relative">
-                    <input
-                      type="text"
-                      list="subjects"
-                      onKeyDown={handleSubjectInput}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        if (value === '') return;
-                        // Check if it matches a datalist option
-                        const datalistOptions = Array.from(document.getElementById('subjects').options).map(opt => opt.value);
-                        if (datalistOptions.includes(value)) {
-                          addSubject(value);
-                          e.target.value = '';
-                        }
-                      }}
-                      className="w-full px-4 py-3 bg-background border border-cardBorder rounded-lg focus:border-primary focus:outline-none"
-                      placeholder="Search or type subjects..."
-                    />
-                    <datalist id="subjects">
-                      <option value="Mathematics" />
-                      <option value="Physics" />
-                      <option value="Chemistry" />
-                      <option value="Biology" />
-                      <option value="Computer Science" />
-                      <option value="React.js" />
-                      <option value="JavaScript" />
-                      <option value="Python" />
-                      <option value="Java" />
-                      <option value="Data Structures" />
-                      <option value="Algorithms" />
-                      <option value="Machine Learning" />
-                      <option value="History" />
-                      <option value="Geography" />
-                      <option value="Economics" />
-                      <option value="English Literature" />
-                      <option value="Psychology" />
-                      <option value="Business Studies" />
-                      <option value="Accounting" />
-                      <option value="Statistics" />
-                    </datalist>
+                  <div className="relative" ref={dropdownRef}>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={subjectInput}
+                        onChange={(e) => {
+                          setSubjectInput(e.target.value);
+                          setShowSubjectDropdown(true);
+                        }}
+                        onKeyDown={handleSubjectInput}
+                        onFocus={() => setShowSubjectDropdown(true)}
+                        className="w-full px-4 py-3 pr-10 bg-background border border-cardBorder rounded-lg focus:border-primary focus:outline-none"
+                        placeholder="Search or type subjects..."
+                      />
+                      <ChevronDown 
+                        className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 pointer-events-none"
+                        size={20}
+                      />
+                    </div>
+                    {showSubjectDropdown && (
+                      <div className="absolute z-50 w-full mt-1 bg-card border border-cardBorder rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                        {subjectOptions
+                          .filter(option => 
+                            option.toLowerCase().includes(subjectInput.toLowerCase()) && 
+                            !formData.subjects.includes(option)
+                          )
+                          .map((option, index) => (
+                            <div
+                              key={index}
+                              onClick={() => handleSubjectSelect(option)}
+                              className="px-4 py-3 hover:bg-primary/20 cursor-pointer transition-colors"
+                            >
+                              {option}
+                            </div>
+                          ))}
+                        {subjectOptions.filter(option => 
+                          option.toLowerCase().includes(subjectInput.toLowerCase()) && 
+                          !formData.subjects.includes(option)
+                        ).length === 0 && (
+                          <div className="px-4 py-3 text-gray-500">
+                            No matching subjects
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
