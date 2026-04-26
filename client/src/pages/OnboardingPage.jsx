@@ -320,29 +320,34 @@ const OnboardingPage = () => {
                       />
                     </div>
                     {showSubjectDropdown && (
-                      <div className="absolute z-50 w-full mt-1 bg-card border border-cardBorder rounded-lg shadow-lg max-h-60 overflow-y-auto">
-                        {subjectOptions
-                          .filter(option => 
+                      <div className="absolute z-50 w-full mt-2 bg-gradient-to-br from-card to-[#1a1a2e] border border-primary/30 rounded-xl shadow-2xl max-h-72 overflow-y-auto backdrop-blur-sm">
+                        <div className="p-2">
+                          {subjectOptions
+                            .filter(option => 
+                              option.toLowerCase().includes(subjectInput.toLowerCase()) && 
+                              !formData.subjects.includes(option)
+                            )
+                            .map((option, index) => (
+                              <div
+                                key={index}
+                                onClick={() => handleSubjectSelect(option)}
+                                className="px-4 py-3 rounded-lg hover:bg-primary/25 hover:border-primary/50 border border-transparent cursor-pointer transition-all duration-200 flex items-center gap-3 group"
+                              >
+                                <div className="w-2 h-2 rounded-full bg-primary/50 group-hover:bg-primary group-hover:shadow-lg group-hover:shadow-primary/50 transition-all duration-200"></div>
+                                <span className="text-gray-200 group-hover:text-white font-medium transition-colors">{option}</span>
+                              </div>
+                            ))}
+                          {subjectOptions.filter(option => 
                             option.toLowerCase().includes(subjectInput.toLowerCase()) && 
                             !formData.subjects.includes(option)
-                          )
-                          .map((option, index) => (
-                            <div
-                              key={index}
-                              onClick={() => handleSubjectSelect(option)}
-                              className="px-4 py-3 hover:bg-primary/20 cursor-pointer transition-colors"
-                            >
-                              {option}
+                          ).length === 0 && (
+                            <div className="px-4 py-6 text-center text-gray-500">
+                              <div className="text-2xl mb-2">🔍</div>
+                              <div className="text-sm">No matching subjects found</div>
+                              <div className="text-xs mt-1">Try typing a different subject</div>
                             </div>
-                          ))}
-                        {subjectOptions.filter(option => 
-                          option.toLowerCase().includes(subjectInput.toLowerCase()) && 
-                          !formData.subjects.includes(option)
-                        ).length === 0 && (
-                          <div className="px-4 py-3 text-gray-500">
-                            No matching subjects
-                          </div>
-                        )}
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>
